@@ -13,6 +13,13 @@ LLM_SKILLS_REPO="${LLM_SKILLS_REPO:-}"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 LLM_SKILLS_DIR="${LLM_SKILLS_DIR:-$HOME/.llm-skills}"
 
+# Normalize line endings for git in the container. A Windows host with
+# core.autocrlf=true checks the workspace out with CRLF; that same bind-mounted
+# tree, seen by the container's git (autocrlf off), would show every text file as
+# "modified". `input` cleans CRLF->LF for comparison so status stays accurate, and
+# it's a harmless no-op on macOS/Linux hosts (already LF).
+git config --global core.autocrlf input
+
 # If a GitHub token was passed as a secret (the `dev` launcher extracts it from
 # the host credential manager), set up a credential helper so private HTTPS
 # clones work when the container was created outside VS Code — VS Code forwards
