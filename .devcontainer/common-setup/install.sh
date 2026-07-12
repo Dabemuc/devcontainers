@@ -18,6 +18,8 @@ if id "$OLD_USER" &>/dev/null && ! id "$NEW_USER" &>/dev/null; then
     sed -i "s/$OLD_USER/$NEW_USER/g" "/etc/sudoers.d/$OLD_USER"
     mv "/etc/sudoers.d/$OLD_USER" "/etc/sudoers.d/$NEW_USER"
   fi
+  # Compat symlink: some tooling/env may still reference /home/vscode.
+  ln -sfn "/home/$NEW_USER" "/home/$OLD_USER"
 fi
 
 apt-get update
