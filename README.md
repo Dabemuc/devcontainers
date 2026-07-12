@@ -118,3 +118,8 @@ Copy any `.devcontainer/<lang>/devcontainer.json`, change the `image` and the
   ```json
   "runArgs": ["--userns=keep-id:uid=1000,gid=1000"]
   ```
+
+
+## Known issues:
+- On mac with multi-gitconfig setup the user info does not get copied into the devcontainer (devcontainer setup worked fine tho)
+- When running .devcontainer/.dev.sh from inside a tmux pane, we get tmux in tmux. But only the hosts outer tmux actually captures e.g. <leader> + c for a new pane
