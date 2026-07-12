@@ -1,0 +1,14 @@
+{
+  "name": "go-dev",
+  "image": "mcr.microsoft.com/devcontainers/go:1-trixie",
+  "features": {
+    "../common-setup": {}
+  },
+  "postCreateCommand": "/usr/local/share/common-setup/post-create.sh",
+  "postStartCommand": "tmux new-session -d -s main || true",
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go"]
+    }
+  }
+}

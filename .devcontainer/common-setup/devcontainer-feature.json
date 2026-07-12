@@ -1,0 +1,24 @@
+{
+  "id": "common-setup",
+  "version": "1.0.0",
+  "name": "Common dev setup (tmux/neovim + dotfiles & skills clone)",
+  "description": "Installs a shared CLI toolchain at build time and clones your dotfiles / llm-skills repos at container creation (using VS Code's forwarded git credentials).",
+  "options": {
+    "dotfilesRepo": {
+      "type": "string",
+      "default": "https://github.com/Dabemuc/dotfiles.git",
+      "description": "HTTPS URL of your dotfiles repo. Cloned (sparse) by postCreateCommand. Set to \"\" to skip."
+    },
+    "llmSkillsRepo": {
+      "type": "string",
+      "default": "https://github.com/Dabemuc/llm-skills.git",
+      "description": "HTTPS URL of your llm-skills repo. Cloned by postCreateCommand. Set to \"\" to skip."
+    }
+  },
+  "containerEnv": {
+    "DOTFILES_DIR": "/home/vscode/.dotfiles",
+    "LLM_SKILLS_DIR": "/home/vscode/.llm-skills",
+    "COLORTERM": "truecolor",
+    "LANG": "C.UTF-8"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "typescript-dev",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22-trixie",
+  "features": {
+    "../common-setup": {}
+  },
+  "postCreateCommand": "/usr/local/share/common-setup/post-create.sh",
+  "postStartCommand": "tmux new-session -d -s main || true",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  }
+}
