@@ -1,6 +1,7 @@
 {
   "name": "typescript-dev",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22-trixie",
+  "runArgs": ["--hostname=ts-dev"],
   "features": {
     "../common-setup": {}
   },

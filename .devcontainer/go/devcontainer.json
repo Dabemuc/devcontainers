@@ -1,6 +1,7 @@
 {
   "name": "go-dev",
   "image": "mcr.microsoft.com/devcontainers/go:1-trixie",
+  "runArgs": ["--hostname=go-dev"],
   "features": {
     "../common-setup": {}
   },
