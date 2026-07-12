@@ -1,100 +1,113 @@
 # devcontainers
 
-My collection of dev containers for programming, sharing one `common-setup` feature.
+My collection of dev containers for programming — Rust / Go / TypeScript on Debian
+trixie + Podman — sharing one `common-setup` feature that auto-installs my dotfiles,
+Neovim, and tmux. A `dev.sh` launcher gives a one-command, terminal-first workflow.
+
+## Prerequisites (host machine)
+
+- **Container runtime** — [Podman](https://podman.io/) (what this uses) or Docker.
+  On Windows, make sure the machine is up: `podman machine start`.
+- **Node.js + the devcontainer CLI** — required by `dev.sh`:
+  ```sh
+  npm install -g @devcontainers/cli
+  ```
+- **Git Bash** (Windows) — `dev.sh` runs here, and it reuses your **Git Credential
+  Manager** login to clone private repos into the container.
+- **A Nerd Font**, installed on the host and selected in your terminal — otherwise
+  Neovim/tmux icons render as boxes:
+  ```sh
+  winget install DEVCOM.JetBrainsMonoNerdFont
+  ```
+  then set the family (e.g. `JetBrainsMono NFM`) in your terminal config.
+- **A terminal** — Alacritty, or any ConPTY terminal (Windows Terminal, VS Code).
+- *For the VS Code flow only (optional):* **VS Code** + the **Dev Containers**
+  extension, with `"dev.containers.dockerPath": "podman"` in user settings.
 
 ## Layout
 
 ```
 devcontainers/
 └── .devcontainer/
-    ├── common-setup/               # shared local feature
-    │   ├── devcontainer-feature.json   # metadata + options (repo URLs)
-    │   ├── install.sh                  # build time (root): install tooling, stage runtime script
-    │   └── post-create.sh              # container creation (vscode): clone + bootstrap dotfiles
+    ├── dev.sh                     # host launcher: create/start container → tmux
+    ├── README.md                  # provenance note (travels with vendored copies)
+    ├── common-setup/              # shared local feature
+    │   ├── devcontainer-feature.json  # metadata + options (dotfiles repo URLs)
+    │   ├── install.sh                 # build time (root): install tooling
+    │   └── post-create.sh             # container creation: clone + link dotfiles/skills
     ├── rust/devcontainer.json
     ├── go/devcontainer.json
     └── typescript/devcontainer.json
 ```
 
 Everything lives under one `.devcontainer/` because the Dev Containers extension
-only accepts local features that resolve **inside** the `.devcontainer/` folder.
-Each language config references the shared feature as `../common-setup`.
+only accepts local features that resolve **inside** that folder; each language
+config references the shared feature as `../common-setup`.
 
-## How to use
+## Use it — terminal (primary)
 
-Open the **repo root** in VS Code, then `Ctrl+Shift+P` → **Dev Containers: Reopen
-in Container** — you'll get a picker listing `rust-dev`, `go-dev`, `typescript-dev`
-(VS Code auto-discovers every `.devcontainer/*/devcontainer.json`). Pick one.
-
-```
-code G:\CodingProjects\devcontainers
-```
-
-## Terminal launcher (`dev.sh`)
-
-For a terminal-first (nvim) workflow, `dev.sh` starts a container — **creating it if
-it doesn't exist** — and drops you into a **tmux** session (`main`), all in one
-command. Run it from **Git Bash**:
+From the repo root, in Git Bash:
 
 ```sh
 ./.devcontainer/dev.sh            # rust (default)
 ./.devcontainer/dev.sh go
-./.devcontainer/dev.sh typescript --rebuild   # force recreate (e.g. after feature changes)
+./.devcontainer/dev.sh typescript --rebuild   # force recreate (e.g. after changing the feature)
 ```
 
-It uses the `@devcontainers/cli` + Podman directly (no VS Code). Because the CLI
-doesn't forward credentials the way VS Code does, `dev.sh` extracts your GitHub
-token from the Windows credential manager (GCM) and passes it to the build as a
-one-time **secret**, so private repos still clone on first creation. Reusing an
-existing container needs no token.
+`dev.sh` creates the container if needed (else starts it) and drops you into a tmux
+session. It drives the `@devcontainers/cli` + Podman directly — no VS Code. Because
+the CLI doesn't forward credentials like VS Code does, `dev.sh` pulls your GitHub
+token from Git Credential Manager and passes it to the build as a one-time
+**secret**, so private dotfiles still clone on first creation. Reusing an existing
+container needs no token.
 
-Prerequisites (already installed on this machine):
-- Podman (with `dev.containers.dockerPath: podman` for the VS Code flow)
-- Node.js + `npm install -g @devcontainers/cli`
+## Use it — VS Code
+
+Open the repo root in VS Code → `Ctrl+Shift+P` → **Dev Containers: Reopen in
+Container**, then pick `rust-dev` / `go-dev` / `typescript-dev` (VS Code
+auto-discovers every `.devcontainer/*/devcontainer.json`).
+
+## Use in another project
+
+Vendor just `.devcontainer/` into any project (no root README, no `.git` — plain
+files; `common-setup` comes along since it lives inside `.devcontainer/`). From the
+**project root**, in Git Bash:
+
+```sh
+curl -fsSL https://github.com/Dabemuc/devcontainers/archive/refs/heads/main.tar.gz \
+  | tar -xz --strip-components=1 devcontainers-main/.devcontainer
+```
+
+Then `./.devcontainer/dev.sh rust` (or go / typescript). `dev.sh` locates itself, so
+the project root becomes the workspace. Re-run the same `curl … | tar …` to update.
 
 ## How it works
 
-- **`install.sh`** runs once at image build time as root: installs `tmux git curl`
-  plus the latest official **neovim** static build (newer than the base image's
-  apt neovim), then stages `post-create.sh` + the configured repo URLs at
-  `/usr/local/share/common-setup/`. It also symlinks `dev-setup` onto the PATH.
-- **`post-create.sh`** runs at container creation as the `vscode` user via
-  `postCreateCommand`: sparse-clones the dotfiles repo (only the paths in its
-  `DOTFILES_LINKS` map, e.g. `nvim` → `~/.config/nvim`) and symlinks them into
-  place, then full-clones `llm-skills` to `~/.llm-skills` and symlinks each skill
-  folder (any subdir with a `SKILL.md`) into `~/.claude/skills/` so Claude Code
-  auto-discovers them.
-
-## Credentials
-
-Cloning private repos relies on **VS Code's automatic git credential forwarding**,
-which supports Git Credential Manager. Nothing is copied or mounted. If a clone
-fails at create time, open the integrated terminal (forwarding is always active
-there) and re-run `dev-setup`. Use **HTTPS** repo URLs, not SSH.
-
-## Runtime: Podman
-
-This machine uses Podman, set in VS Code user settings:
-
-```json
-"dev.containers.dockerPath": "podman"
-```
-
-If bind-mounted workspace files show up with wrong ownership / permission errors,
-add to the relevant `devcontainer.json`:
-
-```json
-"runArgs": ["--userns=keep-id:uid=1000,gid=1000"]
-```
+- **`install.sh`** (build time, root): installs `tmux git curl ripgrep
+  build-essential ncurses-term` + the latest Neovim static build + the tree-sitter
+  CLI, then stages `post-create.sh` at `/usr/local/share/common-setup/` (also
+  symlinked as `dev-setup`).
+- **`post-create.sh`** (container creation, `vscode` user): sparse-clones the
+  dotfiles repo (only the paths in its `DOTFILES_LINKS` map — `nvim` →
+  `~/.config/nvim`, `tmux` → `~/.config/tmux`, incl. their git submodules) and
+  symlinks them; then full-clones `llm-skills` and links each skill folder (any
+  subdir with a `SKILL.md`) into `~/.claude/skills/` for Claude Code.
 
 ## Adding a language
 
 Copy any `.devcontainer/<lang>/devcontainer.json`, change the `image` and the
 `extensions` list. Everything else is identical.
 
-## Reusing outside this repo
+## Notes / troubleshooting
 
-The local feature only resolves inside this repo's `.devcontainer/`. To use
-`common-setup` in an arbitrary project, publish it to GHCR and reference it as
-`ghcr.io/dabemuc/devcontainer-features/common-setup:1`. Ask and I'll add the
-GitHub Actions publish workflow.
+- **Rendering:** run Neovim via `dev.sh` (inside tmux). A raw `podman exec` pty
+  ghosts Neovim's redraws; tmux fixes it. `dev.sh` also forces
+  `TERM=xterm-256color` and `LANG=C.UTF-8` for correct colors and nerd-font glyphs.
+- **Credentials (VS Code flow):** relies on VS Code's git credential forwarding
+  (supports GCM). If a clone fails at create time, re-run `dev-setup` in the
+  integrated terminal. Use **HTTPS** repo URLs, not SSH.
+- **Podman file permissions:** if bind-mounted workspace files show wrong
+  ownership, add to the language `devcontainer.json`:
+  ```json
+  "runArgs": ["--userns=keep-id:uid=1000,gid=1000"]
+  ```
