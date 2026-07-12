@@ -98,7 +98,7 @@ echo "▶ entering $lang container (tmux 'main' — detach with Ctrl-b d)…"
 # Set the container's git identity from the host (fixes conditional-include
 # gitconfigs that don't resolve in the container), then hand off to tmux.
 inner='[ -n "${HOST_GIT_NAME:-}" ] && git config --global user.name "$HOST_GIT_NAME"; [ -n "${HOST_GIT_EMAIL:-}" ] && git config --global user.email "$HOST_GIT_EMAIL"; exec tmux -u new-session -A -s main'
-exec_args=(exec --remote-env TERM=xterm-256color --remote-env LANG=C.UTF-8 \
+exec_args=(exec --remote-env TERM=xterm-256color --remote-env LANG=C.UTF-8 --remote-env COLORTERM=truecolor \
   --remote-env "HOST_GIT_NAME=$git_name" --remote-env "HOST_GIT_EMAIL=$git_email" \
   --workspace-folder "$ws_root" --config "$ws_config" --docker-path "$docker_path" \
   bash -c "$inner")
