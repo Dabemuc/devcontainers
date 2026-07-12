@@ -120,6 +120,14 @@ Copy any `.devcontainer/<lang>/devcontainer.json`, change the `image` and the
   ```
 
 
-## Known issues:
-- On mac with multi-gitconfig setup the user info does not get copied into the devcontainer (devcontainer setup worked fine tho)
-- When running .devcontainer/.dev.sh from inside a tmux pane, we get tmux in tmux. But only the hosts outer tmux actually captures e.g. <leader> + c for a new pane
+## Known issues
+
+- **tmux-in-tmux:** launching `dev.sh` from inside a *host* tmux nests tmux, and the
+  outer (host) tmux captures the prefix (e.g. `prefix + c` opens a **host** pane, not
+  a container one). The inner tmux can't simply be dropped — it's what fixes
+  Neovim's redraw ghosting over the `podman exec` pty (the host tmux sits above that
+  pty and can't). **Workaround:** launch `dev.sh` from a plain terminal (not inside
+  host tmux) and let the container's tmux be your multiplexer; or give the container
+  tmux a different prefix so the two don't collide.
+- *(fixed)* macOS multi-gitconfig user info: `dev.sh` now forwards the host's
+  effective `user.name`/`user.email` (resolving `includeIf`) into the container.

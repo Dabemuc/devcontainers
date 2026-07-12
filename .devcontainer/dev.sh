@@ -53,8 +53,15 @@ to_path() {
   fi
 }
 dc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # the .devcontainer folder
-ws_root="$(to_path "$(dirname "$dc_dir")")"              # repo root = parent of .devcontainer
+project_root="$(dirname "$dc_dir")"                      # repo root = parent of .devcontainer
+ws_root="$(to_path "$project_root")"
 ws_config="$(to_path "$dc_dir/$lang/devcontainer.json")"
+
+# Host's effective git identity for this project. Resolving it from the project dir
+# honours conditional includes (`includeIf`) in ~/.gitconfig, which don't resolve
+# inside the container — so we forward the result below and set it in the container.
+git_name="$(git -C "$project_root" config user.name 2>/dev/null || true)"
+git_email="$(git -C "$project_root" config user.email 2>/dev/null || true)"
 
 # Pull the GitHub token from git's credential helper (GCM on Windows, osxkeychain on
 # macOS, etc.) and stage it as a devcontainer secret (removed right after the build).
@@ -88,9 +95,13 @@ echo "▶ entering $lang container (tmux 'main' — detach with Ctrl-b d)…"
 # (ghosting — buffer text bleeding into the nvim-tree sidebar). tmux owns the screen
 # and redraws cleanly, which fixes it. TERM=xterm-256color gives complete redraw
 # caps; LANG=C.UTF-8 makes tmux render nerd-font glyphs (else they show as boxes).
+# Set the container's git identity from the host (fixes conditional-include
+# gitconfigs that don't resolve in the container), then hand off to tmux.
+inner='[ -n "${HOST_GIT_NAME:-}" ] && git config --global user.name "$HOST_GIT_NAME"; [ -n "${HOST_GIT_EMAIL:-}" ] && git config --global user.email "$HOST_GIT_EMAIL"; exec tmux -u new-session -A -s main'
 exec_args=(exec --remote-env TERM=xterm-256color --remote-env LANG=C.UTF-8 \
+  --remote-env "HOST_GIT_NAME=$git_name" --remote-env "HOST_GIT_EMAIL=$git_email" \
   --workspace-folder "$ws_root" --config "$ws_config" --docker-path "$docker_path" \
-  tmux -u new-session -A -s main)
+  bash -c "$inner")
 
 # Modern terminals (Alacritty, Windows Terminal, VS Code, macOS/Linux terminals)
 # give native programs a real TTY and pass truecolor through — run the CLI directly.
