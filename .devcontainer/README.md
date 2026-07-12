@@ -7,7 +7,7 @@ repo — there's no git history here; the upstream repo is the source of truth.
 
 ## Use
 
-From the **project root**, in Git Bash:
+From the **project root** (Git Bash on Windows, or your shell on macOS/Linux):
 
 ```sh
 ./.devcontainer/dev.sh rust        # or: go | typescript

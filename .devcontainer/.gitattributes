@@ -1,0 +1,3 @@
+# These scripts run inside the Linux container — keep them LF so the shebang and
+# heredocs don't break if this folder is vendored into a project with autocrlf.
+*.sh text eol=lf

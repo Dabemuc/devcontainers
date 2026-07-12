@@ -6,21 +6,28 @@ Neovim, and tmux. A `dev.sh` launcher gives a one-command, terminal-first workfl
 
 ## Prerequisites (host machine)
 
-- **Container runtime** — [Podman](https://podman.io/) (what this uses) or Docker.
-  On Windows, make sure the machine is up: `podman machine start`.
+- **Container runtime** — [Podman](https://podman.io/) or Docker. `dev.sh`
+  auto-detects (override with `DEV_DOCKER=docker`). On Windows, make sure the
+  machine is up: `podman machine start`.
 - **Node.js + the devcontainer CLI** — required by `dev.sh`:
   ```sh
   npm install -g @devcontainers/cli
   ```
-- **Git Bash** (Windows) — `dev.sh` runs here, and it reuses your **Git Credential
-  Manager** login to clone private repos into the container.
+- **A shell to run `dev.sh`** — **Git Bash** on Windows, or your native shell on
+  macOS/Linux. It reuses your git credential helper (GCM / osxkeychain / …) to
+  clone private repos into the container.
 - **A Nerd Font**, installed on the host and selected in your terminal — otherwise
   Neovim/tmux icons render as boxes:
   ```sh
+  # Windows
   winget install DEVCOM.JetBrainsMonoNerdFont
+  # macOS
+  brew install --cask font-jetbrains-mono-nerd-font
+  # Linux: your package manager, or download from nerdfonts.com
   ```
   then set the family (e.g. `JetBrainsMono NFM`) in your terminal config.
-- **A terminal** — Alacritty, or any ConPTY terminal (Windows Terminal, VS Code).
+- **A terminal** — Alacritty, or any modern terminal (Windows Terminal, VS Code,
+  Ghostty, Kitty, …).
 - *For the VS Code flow only (optional):* **VS Code** + the **Dev Containers**
   extension, with `"dev.containers.dockerPath": "podman"` in user settings.
 
@@ -46,7 +53,7 @@ config references the shared feature as `../common-setup`.
 
 ## Use it — terminal (primary)
 
-From the repo root, in Git Bash:
+From the repo root (Git Bash on Windows, or your shell on macOS/Linux):
 
 ```sh
 ./.devcontainer/dev.sh            # rust (default)
@@ -71,7 +78,7 @@ auto-discovers every `.devcontainer/*/devcontainer.json`).
 
 Vendor just `.devcontainer/` into any project (no root README, no `.git` — plain
 files; `common-setup` comes along since it lives inside `.devcontainer/`). From the
-**project root**, in Git Bash:
+**project root** (Git Bash on Windows, or your shell on macOS/Linux):
 
 ```sh
 curl -fsSL https://github.com/Dabemuc/devcontainers/archive/refs/heads/main.tar.gz \
