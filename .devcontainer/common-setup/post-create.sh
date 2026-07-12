@@ -29,6 +29,7 @@ fi
 # on macOS; here we sparse-fetch and link only these. Add an entry to extend.
 declare -A DOTFILES_LINKS=(
   [nvim]="$HOME/.config/nvim"
+  [tmux]="$HOME/.config/tmux"
 )
 
 # clone_or_update REPO DIR NAME [sparse_path...]
@@ -83,6 +84,12 @@ link_config() {
 # --- dotfiles: sparse-fetch only the paths we link, then link them ---
 clone_or_update "$DOTFILES_REPO" "$DOTFILES_DIR" "dotfiles" "${!DOTFILES_LINKS[@]}"
 for sub in "${!DOTFILES_LINKS[@]}"; do
+  # Some configs vendor dependencies as git submodules (e.g. tmux/plugins/* — tpm
+  # and the theme plugins). Fetch them for this path so tmux loads them offline.
+  if [ -e "$DOTFILES_DIR/.git" ] && [ -d "$DOTFILES_DIR/$sub" ]; then
+    git -C "$DOTFILES_DIR" submodule update --init --recursive -- "$sub" 2>/dev/null \
+      || echo "ℹ  $sub: no submodules or fetch failed (continuing)"
+  fi
   link_config "$DOTFILES_DIR/$sub" "${DOTFILES_LINKS[$sub]}"
 done
 
