@@ -6,6 +6,20 @@ set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
+# Rename the base image's default `vscode` user/group to `devcontainer` so
+# `whoami` matches the container identity. Home dir is moved with -m; the
+# sudoers drop-in (if present) is renamed to match.
+OLD_USER=vscode
+NEW_USER=devcontainer
+if id "$OLD_USER" &>/dev/null && ! id "$NEW_USER" &>/dev/null; then
+  usermod -l "$NEW_USER" -d "/home/$NEW_USER" -m "$OLD_USER"
+  groupmod -n "$NEW_USER" "$OLD_USER"
+  if [ -f "/etc/sudoers.d/$OLD_USER" ]; then
+    sed -i "s/$OLD_USER/$NEW_USER/g" "/etc/sudoers.d/$OLD_USER"
+    mv "/etc/sudoers.d/$OLD_USER" "/etc/sudoers.d/$NEW_USER"
+  fi
+fi
+
 apt-get update
 apt-get install -y --no-install-recommends \
   tmux git curl ca-certificates tar \

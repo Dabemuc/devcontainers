@@ -2,6 +2,8 @@
   "name": "rust-dev",
   "image": "mcr.microsoft.com/devcontainers/rust:1-trixie",
   "runArgs": ["--hostname=rust-dev"],
+  "remoteUser": "devcontainer",
+  "containerUser": "devcontainer",
   "features": {
     "../common-setup": {}
   },

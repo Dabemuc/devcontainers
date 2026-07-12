@@ -2,6 +2,8 @@
   "name": "go-dev",
   "image": "mcr.microsoft.com/devcontainers/go:1-trixie",
   "runArgs": ["--hostname=go-dev"],
+  "remoteUser": "devcontainer",
+  "containerUser": "devcontainer",
   "features": {
     "../common-setup": {}
   },
